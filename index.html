@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="UniversalNER">
+  <meta name="keywords" content="NER">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UniNER</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="images/galaxy.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+  <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.27.0/gradio.js"></script>
+</head>
+
+<style>
+  .expandable-card .card-text-container {
+    max-height: 200px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .expandable-card.expanded .card-text-container {
+    max-height: none;
+  }
+
+  .expand-btn {
+    position: relative;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* margin-top: -20px; */
+    /* justify-content: center; */
+    color: #510c75;
+    border-color: transparent;
+  }
+
+  .expand-btn:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    text-decoration: none;
+    border-color: transparent;
+    color: #510c75;
+  }
+
+  .expand-btn:focus {
+    outline: none;
+    text-decoration: none;
+  }
+
+  .expandable-card:not(.expanded) .card-text-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+
+  .expandable-card:not(.expanded) .expand-btn {
+    margin-top: -40px;
+  }
+
+  .card-body {
+    padding-bottom: 5px;
+  }
+
+  .vertical-flex-layout {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .adjustable-font-size {
+    font-size: calc(0.5rem + 2vw);
+  }
+
+  .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  #gradio pre {
+    background-color: transparent;
+  }
+</style>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">UniversalNER</h1>
+            <h3 class="title is-3 publication-title">A case study on distilling task-level capabilities from LLMs</h3>
+            <div class="is-size-5">
+              <span class="author-block">
+                <a href="https://wzhouad.github.io/" style="color:#f68946;font-weight:normal;">Wenxuan Zhou<sup>*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://sheng-z.github.io/" style="color:#008AD7;font-weight:normal;">Sheng Zhang<sup>*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://www.linkedin.com/in/aidengu" style="color:#008AD7;font-weight:normal;">Yu Gu</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://muhaochen.github.io/" style="color:#f68946;font-weight:normal;">Muhao Chen</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://www.microsoft.com/en-us/research/people/hoifung/" style="color:#008AD7;font-weight:normal;">Hoifung Poon</a>
+              </span>
+            </div>
+
+            <br>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><b style="color:#f68946; font-weight:normal">&#x25B6 </b>University of Southern California</b></span>
+              <span class="author-block"><b style="color:#008AD7; font-weight:normal">&nbsp&nbsp&#x25B6 </b> Microsoft Research</span>
+              <span class="author-block">&nbsp&nbsp<sup>*</sup>Equal Contribution</span>
+            </div>
+
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="far fa-images"></i>
+                    </span>
+                    <span>Demo</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-share-square"></i>
+                    </span>
+                    <span>Model</span>
+                  </a>
+                </span>
+
+
+                
+
+                <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                  </a>
+              </span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <h4 class="subtitle has-text-centered">
+           We propose a recipe for distilling end-task capabilities from LLMs. Using NER as a case study, we successfully distill these capabilities from LLMs into a much smaller model UniversalNER
+           that can recognize diverse types of entities or concepts in text corpora from a wide range of domains.
+           UniversalNER surpasses existing instruction-tuned models at the same size (e.g., Alpaca, Vicuna) by a large margin, and shows substantially better performance to ChatGPT.
+        </h4>
+      </div>
+    </div>
+  </section>
+
+  <section class="section"  style="background-color:#efeff081">
+    <div class="container is-max-desktop" id="gradio">
+      <gradio-app src=" https://a65ecd6dd47190f554.gradio.live"></gradio-app>
+    </div>
+  </section>
+
+  
+<section class="section">
+  <!-- Results. -->
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"><img id="painting_icon" width="3%" src="images/command-line.png"> Instruction Data for NER</h2>
+      <span style="font-size: 95%;">Download the dataset from <a href="#">[HuggingFace Dataset]</a></span>
+    </div>
+  </div>
+  <!-- </div> -->
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <div class="content has-text-justified">
+        <p>
+
+          We prompt ChatGPT to generate a instruction-following dataset for NER. The dataset comprises 45,889 input-output pairs, encompassing 240,725 entities and 13,020 distinct entity types.
+          The dataset contains entity types from various domains, ranging from the general domain (e.g., <span style="font-variant: small-caps;">Person</span>) to the clinical domain (e.g., <span style="font-variant: small-caps;">Medical Condition</span>).
+          Moreover, we observe variations in granularity among the entity types. For instance, <span style="font-variant: small-caps;">County</span>is the subset of <span style="font-variant: small-caps;">Location</span>, 
+          and <span style="font-variant: small-caps;">Input Device</span> is a subset of <span style="font-variant: small-caps;">Product</span>.
+          These data characteristics offer extensive coverage of entity types, making them suitable for distilling capabilities from LLMs across various domains.
+          A divide of entity types according to frequency is shown in the table below:
+        </p>
+
+<!-- CSS Code: Place this code in the document's head (between the 'head' tags) -->
+<style>
+  table.GeneratedTable {
+    width: 100%;
+    background-color: #ffffff;
+    border-collapse: collapse;
+    border-width: 2px;
+    border-color: #c1c4c5;
+    border-style: solid;
+    color: #000000;
+  }
+  
+  table.GeneratedTable td, table.GeneratedTable th {
+    border-width: 2px;
+    border-color: #9b9d9e;
+    border-style: solid;
+    padding: 5px;
+  }
+  
+  table.GeneratedTable thead {
+    background-color: #6691ee;
+  }
+  </style>
+  
+  <!-- HTML Code: Place this code in the document's body (between the 'body' tags) where the table should appear -->
+  <div class="column is-six-fifths" width="90%">
+  <div class="column is-six-fifths" style="display: flex; align-items: flex-start; justify-content: space-between;">  
+    <table class="GeneratedTable" style="width: 33%;">
+      <thead>
+        <tr>
+          <th>Data Construction Prompt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-size: 90%;"><b>System Message:</b> You are a helpful information extraction system. <br><br>
+    
+    <b>Prompt:</b> Given a passage, your task is to extract all entities and identify their entity types. The output should be in a list of tuples of the following format: [("entity 1", "type of entity 1"), ... ].<br><br>
+
+<b>Passage:</b> {input_passage}
+   </td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="GeneratedTable" style="width: 65%;">
+      <thead>
+        <tr>
+          <th>Head/Tail</th>
+          <th>Frequency</th>
+          <th>Unique Entity Types</th>
+          <th>Example Entity Types</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Top 1%</td>
+          <td>74%</td>
+          <td>130</td>
+          <td><span style="font-variant: small-caps;">Person, Organization, Location, Date, Concept, Product, Event, Technology, Group, Medical Condition, ...</span></td>
+        </tr>
+        <tr>
+          <td>Top 1%-10%</td>
+          <td>19%</td>
+          <td>1172</td>
+          <td><span style="font-variant: small-caps;">Characteristic, Research, County, Module, Unit, Feature, Cell, Package, Anatomical Structure, Equipment, ...</span></td>
+        </tr>
+        <tr>
+          <td>All the rest</td>
+          <td>7%</td>
+          <td>11718</td>
+          <td><span style="font-variant: small-caps;">Attribute Value, Pokemon, Immune Response, Physiology, Animals, Cell Feature, FAC, Input Device, Ward, Broadcast, ...</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+
+</section>
+ 
+
+<section class="section">
+  <!-- Results. -->
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"><img id="painting_icon" width="3%" src="https://cdn-icons-png.flaticon.com/512/5379/5379860.png"> Task-specific Instruction Tuning</h2>
+    </div>
+  </div>
+  <!-- </div> -->
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <div class="content has-text-justified"> 
+        <p>
+          Unlike the existing work that tunes the models to do diverse tasks, we present a recipe of instruction tuning for a specific task, where the pretrained model is tuned to generalize to previously unseen inputs within the same task.
+          <ul type="1">
+            <li><b>Conversation-style Instruction Tuning: </b> <span style="font-size: 95%;">We adopt a conversation-style tuning format, where the language model (LM) is presented with a passage as input. Then, for each entity type that appears in the output, we transform it into a natural language question. Subsequently, we tune the LM to generate a structured output in the form of a JSON list containing all entities of the query type in the passage.
+            We consider the <mark>reference entities</mark> (highlighted below) as gold tokens and apply a language modeling objective on these tokens.</span></li>
+ <div class="column is-six-fifths" style="display: flex; align-items: flex-start; justify-content: center;">  
+    <table class="GeneratedTable" style="width: 60%;">
+      <thead>
+        <tr>
+          <th>Conversation-style Instruction Tuning Template</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-size: 90%;">
+             A virtual assistant answers questions from a user based on the provided text.<br>
+    <b>User:</b> Text: <b><i>X</i></b><sub>passage</sub><br>
+    <b>Assistant:</b> I've read this text.<br>
+    <b>User:</b> What describes <b><i>t</i></b><sub>1</sub> in the text?<br>
+    <b>Assistant:</b> <mark><b><i>y</i></b><sub>1</sub></mark><br>
+    ...<br>
+    <b>User:</b> What describes <b><i>t</i></b><sub>T</sub> in the text?<br>
+    <b>Assistant:</b> <mark><b><i>y</i></b><sub>T</sub></mark><br>
+   </td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+            <li><b>Negative sampling:</b> <span style="font-size: 95%;">During tuning, we randomly sample negative entity types from the collection of all entity types that do not appear in the passage as queries and set the expected outputs as empty JSON lists. The sampling of negative entity types is done with a probability proportional to the frequency of entity types in the entire dataset. This approach greatly improves the instruction tuning results.</span></li>
+ <div class="column is-six-fifths" style="display: flex; align-items: flex-start; justify-content: center;">  
+    <table class="GeneratedTable" style="width: 90%;">
+      <thead>
+    <tr>
+        <td>Negative Sampling Strategy</td>
+        <td>Movie</td>
+        <td>Restaurant</td>
+        <td>AI</td>
+        <td>Literature</td>
+        <td>Music</td>
+        <td>Politics</td>
+        <td>Science</td>
+        <td>Avg</td>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>None</td>
+        <td>19.1</td>
+        <td>19.1</td>
+        <td>25.1</td>
+        <td>39.5</td>
+        <td>42.7</td>
+        <td>48.9</td>
+        <td>26.2</td>
+        <td>31.5</td>
+    </tr>
+    <tr>
+        <td>Uniform</td>
+        <td>42.5</td>
+        <td>29.0</td>
+        <td>42.5</td>
+        <td>53.3</td>
+        <td>57.4</td>
+        <td>56.8</td>
+        <td>52.6</td>
+        <td>47.7</td>
+    </tr>
+    <tr>
+        <td>Frequency</td>
+        <td>42.4</td>
+        <td>31.7</td>
+        <td>53.5</td>
+        <td>59.4</td>
+        <td>65.0</td>
+        <td>60.8</td>
+        <td>61.1</td>
+        <td>53.4</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+          </ul>  
+          Please check out ``UniversalNER'' model checkpoint on 
+          <a href="#">[HuggingFace Models]</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+  
+
+
+<section class="section">
+  <!-- Results. -->
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"><img id="painting_icon" width="5%" src="https://cdn-icons-png.flaticon.com/512/3515/3515174.png"> Performance</h2>
+    </div>
+  </div>
+
+
+
+  <!-- </div> -->
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+
+  <!-- Grounedtext2img. -->
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <h2 class="title is-4"><img id="painting_icon" width="4%" src="images/chart.png"> <span style="font-size: 100%;">Universal NER Benchmark</span> -- the largest NER benchmark to date</h2>
+      <p>
+        <b>Benchmark:</b> The Universal NER benchmark encompasses 43 NER datasets across 9 domains, including general, biomedical, clinical, STEM, programming, social media, law, finance, and transportation domains.
+        An overview of the data distribution is shown below.
+      </p>
+      <p>
+        <b>Zero-shot Performance:</b> UniversalNER surpasses existing instruction-tuned models at the same size (e.g., Vicuna) by a large margin. More importantly, UniversalNER outperform ChatGPT in terms of average F1.
+        This demonstrates that task-specific distillation from diverse inputs can yield task-specific models with better performance and smaller size.
+        Domain breakdowns also show the improvements of UniversalNER over ChatGPT.
+      </p>
+       <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths" style="display: flex; align-items: flex-start; justify-content: center;">  
+        <figure style="text-align: center;">
+          <img id="teaser" width="100%" src="images/data_dist.svg">  
+          <figcaption>
+            Distribution of Universal NER benchmark.
+          </figcaption>
+        </figure>
+        <figure style="text-align: center;">
+          <img id="teaser" width="100%" src="images/zero_shot_domain.svg">  
+          <figcaption>
+            Zero-shot performance on different domains.
+          </figcaption>
+        </figure>
+      </div>
+      </div>  
+
+    </div>
+  </div>
+
+  <!-- Grounedtext2img. -->
+  <div class="columns is-centered">
+    <div class="column is-full-width">
+      <h2 class="title is-4"> <img id="painting_icon" width="3%" src="images/alchemy.png"><span style="font-size: 100%;"> Supervised Multitask Fine-tuning:</span> New SoTA with a single model across different datasets</h2>
+      
+      <p><b>Supervised Fine-tuned Performance:</b> For a fair comparison, we train UniversalNER-7B using the same training data in <a href="https://arxiv.org/abs/2304.08085">InstructUIE-11B</a>.
+        Results in the table below show UniversalNER-7B achieves an average F1 of 84.78% on the 20 datasets, surpassing both BERT-base and InstructUIE-11B by 4.69% and 3.62%, respectively. This experiment demonstrates the effectiveness of our model in the supervised setting.</p>
+  <div class="column is-six-fifths" style="display: flex; align-items: flex-start; justify-content: center;">  
+    <table class="GeneratedTable" style="width: 60%;">
+      <thead>
+    <tr>
+        <th>Dataset</th>
+        <th>BERT-base</th>
+        <th>InstructUIE-11B</th>
+        <th>UniversalNER-7B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td>ACE05</td>
+        <td><b>87.30</b></td>
+        <td>79.94</td>
+        <td>86.69</td>
+    </tr>
+    <tr>
+        <td>AnatEM</td>
+        <td>85.82</td>
+        <td>88.52</td>
+        <td><b>88.65</b></td>
+    </tr>
+    <tr>
+        <td>bc2gm</td>
+        <td>80.90</td>
+        <td>80.69</td>
+        <td><b>82.42</b></td>
+    </tr>
+    <tr>
+        <td>bc4chemd</td>
+        <td>86.72</td>
+        <td>87.62</td>
+        <td><b>89.21</b></td>
+    </tr>
+    <tr>
+        <td>bc5cdr</td>
+        <td>85.28</td>
+        <td>89.02</td>
+        <td><b>89.34</b></td>
+    </tr>
+    <tr>
+        <td>Broad Twitter Corpus</td>
+        <td>58.61</td>
+        <td>80.27</td>
+        <td><b>81.25</b></td>
+    </tr>
+    <tr>
+        <td>CoNLL03</td>
+        <td>92.40</td>
+        <td>91.53</td>
+        <td><b>93.30</b></td>
+    </tr>
+    <tr>
+        <td>FabNER</td>
+        <td>64.20</td>
+        <td>78.38</td>
+        <td><b>81.87</b></td>
+    </tr>
+    <tr>
+        <td>FindVehicle</td>
+        <td>87.13</td>
+        <td>87.56</td>
+        <td><b>98.30</b></td>
+    </tr>
+    <tr>
+        <td>GENIA</td>
+        <td>73.3</td>
+        <td>75.71</td>
+        <td><b>77.54</b></td>
+    </tr>
+    <tr>
+        <td>HarveyNER</td>
+        <td><b>82.26</b></td>
+        <td>74.69</td>
+        <td>74.21</td>
+    </tr>
+    <tr>
+        <td>MIT Movie</td>
+        <td>88.78</td>
+        <td>89.58</td>
+        <td><b>90.17</b></td>
+    </tr>
+    <tr>
+        <td>MIT Restaurant</td>
+        <td>81.02</td>
+        <td><b>82.59</b></td>
+        <td>82.35</td>
+    </tr>
+    <tr>
+        <td>MultiNERD</td>
+        <td>91.25</td>
+        <td>90.26</td>
+        <td><b>93.73</b></td>
+    </tr>
+    <tr>
+        <td>ncbi</td>
+        <td>80.20</td>
+        <td>86.21</td>
+        <td><b>86.96</b></td>
+    </tr>
+    <tr>
+        <td>OntoNotes</td>
+        <td><b>91.11</b></td>
+        <td>88.64</td>
+        <td>89.91</td>
+    </tr>
+    <tr>
+        <td>PolyglotNER</td>
+        <td><b>75.65</b></td>
+        <td>53.31</td>
+        <td>65.67</td>
+    </tr>
+    <tr>
+        <td>TweetNER7</td>
+        <td>56.49</td>
+        <td><b>65.95</b></td>
+        <td>65.77</td>
+    </tr>
+    <tr>
+        <td>WikiANN</td>
+        <td>70.60</td>
+        <td>64.47</td>
+        <td><b>84.91</b></td>
+    </tr>
+    <tr>
+        <td>wikiNeural</td>
+        <td>82.78</td>
+        <td>88.27</td>
+        <td><b>93.28</b></td>
+    </tr>
+    <tr>
+        <td>Avg</td>
+        <td>80.09</td>
+        <td>81.16</td>
+        <td><b>84.78</b></td>
+    </tr>
+</tbody>
+</table>
+    </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="section">
+
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"><img width="5%" src="images/creative-writing.png"> Examples on Diverse Entity Recognition</h2>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <!-- <h2 class="text-center mb-5">Who's GPT-4's favorite? Battles between State-of-the-Art Chatbots</h2> -->
+    <!-- Selection -->
+    <div class="form-row" style="justify-content: flex-end;">
+      <div class="form-group col-md-1">
+        <div class="col-md-2" style="width: 100%"><label>&nbsp;</label></div>
+        <div class="btn-group" role="group" aria-label="Left and Right Controller"
+          style="width: 100%;align-items: flex-end;justify-content: center;flex-direction: row;display: flex;">
+          <button type="button" class="form-control btn btn-primary" id="prev-question"><i
+              class="material-icons">keyboard_arrow_left</i></button>
+          <button type="button" class="form-control btn btn-primary" id="next-question"><i
+              class="material-icons">keyboard_arrow_right</i></button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <div class="card mb-4" style="width: 100%; display: flex; align-items: center;">
+        <!-- <p><b>Description:</b> Monalisa is a famous painting by Leonardo da Vinci. </p> -->
+
+        <div class="card-body" id="selected-question" style="display: flex; height: 60vh;">
+          <div class="chat-history">
+            <!-- Add your chat messages here -->
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>
+  @article{zhou2023universalner,
+    author      = {Zhou, Wenxuan and Zhang, Sheng and Gu, Yu and Chen, Muhao and Poon, Hoifung},
+    title       = {UniversalNER: A case study on distilling task-level capabilities from LLMs},
+    publisher   = {arXiv:add-number},
+    year        = {2023}
+  }
+  </code></pre>
+    </div>
+  </section>
+  
+  <section class="section" id="Acknowledgement">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Acknowledgement</h2>
+      <p>
+        This website is adapted from <a
+        href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> and <a href="https://llava-vl.github.io/">LLaVA</a>, licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+        Commons Attribution-ShareAlike 4.0 International License</a>.  We thank the LLaMA team for giving us access to their models.
+      </p>
+
+      <p>
+<b>Usage and License Notices</b>: The data, code and checkpoint is intended and licensed for research use only. They are also restricted to uses that follow the license agreement of LLaMA, ChatGPT, and the original dataset used in the benchmark. The dataset is CC BY NC 4.0 (allowing only non-commercial use) and models trained using the dataset should not be used outside of research purposes.
+</p>
+    </div>
+  </section>
+
+  <script>
+    // Handle message showing
+    function createChatRow(sender, text, imageSrc) {
+      var article = document.createElement("article");
+      article.className = "media"
+
+      var figure = document.createElement("figure");
+      figure.className = "media-left";
+
+      var span = document.createElement("span");
+      span.className = "icon is-large";
+
+      var icon = document.createElement("i");
+      icon.className = "fas fas fa-2x" + (sender === "User" ? " fa-user " : sender === "UniversalNER" ? " fa-robot" : "");
+
+      var media = document.createElement("div");
+      media.className = "media-content";
+
+      var content = document.createElement("div");
+      content.className = "content";
+
+      var para = document.createElement("p");
+
+      // wrap text in pre tag to preserve whitespace and line breaks
+      var pre_text = document.createElement("pre");
+      pre_text.style = "background-color: white; font-size: 18px; font-family: Arial; padding: 0; margin: 0; white-space: pre-wrap; word-wrap: break-word;";
+      // var paraText = document.createTextNode(text);
+      // pre_text.appendChild(paraText);
+      pre_text.innerHTML = text;
+
+      var strong = document.createElement("strong");
+      strong.innerHTML = sender;
+      var br = document.createElement("br");
+
+      para.appendChild(strong);
+      para.appendChild(br);
+      para.appendChild(pre_text);
+
+      // Add image if imageSrc is provided
+      if (imageSrc) {
+        var img = document.createElement("img");
+        img.src = imageSrc;
+        img.style = "max-width: 100%; max-height: 300px;"; // Adjust the style as needed
+        para.appendChild(img);
+      }
+
+      content.appendChild(para);
+      media.appendChild(content);
+      span.appendChild(icon);
+      figure.appendChild(span);
+      if (sender !== "Description") {
+        article.appendChild(figure);
+      };
+      article.appendChild(media);
+      return article;
+    }
+
+    function addMessageToChatHistory(sender, message, imageSrc) {
+      const chatHistory = document.querySelector('.chat-history');
+      const chatRow = createChatRow(sender, message, imageSrc);
+      chatHistory.appendChild(chatRow);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function clearChatHistory() {
+      const chatHistory = document.querySelector('.chat-history');
+      chatHistory.innerHTML = "";
+    }
+
+    // 
+    let codeString = `Read this text/code snippet below:<br><code>from transformers import GPT2Tokenizer, GPT2LMHeadModel
+
+tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+model = GPT2LMHeadModel.from_pretrained('gpt2')
+
+input_text = "This is a simple program"
+input_ids = tokenizer.encode(input_text, return_tensors='pt')
+output = model.generate(input_ids, max_new_tokens=50)
+generated_text = tokenizer.decode(output[0], skip_special_tokens=True)</code>`;
+
+    let absString = `Read this abstract below:<br>Relation extraction (RE), which has relied on structurally annotated corpora for model training, has been particularly challenging in low-resource scenarios and domains. Recent literature has tackled low-resource RE by self-supervised learning, where the solution involves pretraining the entity pair embedding by RE-based objective and finetuning on labeled data by classification-based objective. However, a critical challenge to this approach is the gap in objectives, which prevents the RE model from fully utilizing the knowledge in pretrained representations. In this paper, we aim at bridging the gap and propose to pretrain and finetune the RE model using consistent objectives of contrastive learning. Since in this kind of representation learning paradigm, one relation may easily form multiple clusters in the representation space, we further propose a multi-center contrastive loss that allows one relation to form multiple clusters to better align with pretraining. Experiments on two document-level RE datasets, BioRED and Re-DocRED, demonstrate the effectiveness of our method. Particularly, when using 1% end-task training data, our method outperforms PLM-based RE classifier by 10.5% and 6.1% on the two datasets, respectively.`;
+
+    let noteString = `Read this clinical note below:<br>Patient Name: John Doe
+Age: 45
+Gender: Male
+Date of Examination: August 3, 2023
+
+Chief Complaint:
+The patient presents with a persistent cough and shortness of breath for the past two weeks.
+
+History of Present Illness:
+John Doe, a 45-year-old male, reports a progressive onset of cough, which started as a mild irritation but has worsened over the last two weeks. He also complains of occasional chest tightness and difficulty breathing, especially during physical exertion. There is no history of fever, chills, or recent upper respiratory tract infections.
+
+Past Medical History:
+
+Hypertension - Diagnosed 5 years ago, controlled with medication.
+Allergic Rhinitis - Seasonal allergies, managed with antihistamines.
+Obesity - BMI 32, struggling with weight management.`;
+
+    const conversations = [
+      {
+        "turns": [
+          ["User", noteString],
+          ["UniversalNER", "I've read this clinical note."],
+          ["User", "What describes symptom in the text?​"],
+          ["UniversalNER",
+          '["cough", "shortness of breath", "chest tightness", "difficulty breathing", "fever", "chills"]'],
+          ["User", "What describes treatment in the text?​"],
+          ["UniversalNER",
+          '["medication", "antihistamines"]'],
+          ["User", "What describes measurement in the text?​"],
+          ["UniversalNER",'["BMI"]'],
+          ["User", "What describes time duration in the text?"],
+          ["UniversalNER", '["two weeks", "5 years ago"]'],
+          ["User", "What describes medical condition in the text?"],
+          ["UniversalNER", '["Hypertension", "Allergic Rhinitis", "Obesity"]']
+        ]
+      },
+      {
+        "turns": [
+          ["User", absString],
+          ["UniversalNER", "I've read this abstract."],
+          ["User", "What describes task in the text?​"],
+          ["UniversalNER",
+          '["Relation extraction", "low-resource RE", "document-level RE"]'],
+          ["User", "What describes dataset in the text?​"],
+          ["UniversalNER",
+          '["BioRED", "Re-DocRED"]'],
+          ["User", "What describes model in the text?​"],
+          ["UniversalNER",'["RE model", "PLM-based RE classifier"]'],
+          ["User", "What describes method in the text?"],
+          ["UniversalNER", '["self-supervised learning", "pretraining", "finetuning", "contrastive learning", "multi-center contrastive loss", "end-task training data"]'],
+          ["User", "What describes objective in the text?"],
+          ["UniversalNER", '["classification-based objective", "contrastive learning", "multi-center contrastive loss"]']
+        ]
+      },
+      {
+        "turns": [
+          ["User", codeString],
+          ["UniversalNER", "I've read this text/code snippet."],
+          ["User", "What describes library in the text?​"],
+          ["UniversalNER",
+          '["transformers"]'],
+          ["User", "What describes local variable in the text?​"],
+          ["UniversalNER",
+          '["input_text", "input_ids", "output", "generated_text"]'],
+          ["User", "What describes global variable in the text?​"],
+          ["UniversalNER",'[]'],
+          ["User", "What describes method in the text?"],
+          ["UniversalNER", '["encode", "generate", "decode"]'],
+          ["User", "What describes class in the text?"],
+          ["UniversalNER", '["GPT2Tokenizer", "GPT2LMHeadModel"]']
+
+        ]
+      },
+    ];
+
+    // The current image index
+    let currentIndex = 0;
+
+    // The function to update the displayed chat history
+    function update_dialog_demo() {
+      // Clear the chat history
+      clearChatHistory();
+
+      for (let i = 0; i < conversations[currentIndex].turns.length; i++) {
+        if (conversations[currentIndex].turns[i].length == 2) {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1]);
+        }
+        else {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1], conversations[currentIndex].turns[i][2]);
+        }
+      }
+
+      // scroll to the top of the chat history
+      document.querySelector('.chat-history').scrollTop = 0;
+    }
+
+    // Initialize the displayed image
+    update_dialog_demo();
+
+    // Event listeners for the buttons
+    document.getElementById('prev-question').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + conversations.length) % conversations.length;
+      update_dialog_demo();
+    });
+
+    document.getElementById('next-question').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % conversations.length;
+      update_dialog_demo();
+    });
+
+
+  </script>
+
+</body>
+
+</html>
