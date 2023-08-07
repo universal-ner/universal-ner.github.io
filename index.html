@@ -787,7 +787,7 @@
     }
 
     // 
-    let codeString = `Read this text/code snippet below:<br><code>from transformers import GPT2Tokenizer, GPT2LMHeadModel
+    let codeString = `Read this text below:<br><code>from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 model = GPT2LMHeadModel.from_pretrained('gpt2')
@@ -797,9 +797,9 @@ input_ids = tokenizer.encode(input_text, return_tensors='pt')
 output = model.generate(input_ids, max_new_tokens=50)
 generated_text = tokenizer.decode(output[0], skip_special_tokens=True)</code>`;
 
-    let absString = `Read this abstract below:<br>Relation extraction (RE), which has relied on structurally annotated corpora for model training, has been particularly challenging in low-resource scenarios and domains. Recent literature has tackled low-resource RE by self-supervised learning, where the solution involves pretraining the entity pair embedding by RE-based objective and finetuning on labeled data by classification-based objective. However, a critical challenge to this approach is the gap in objectives, which prevents the RE model from fully utilizing the knowledge in pretrained representations. In this paper, we aim at bridging the gap and propose to pretrain and finetune the RE model using consistent objectives of contrastive learning. Since in this kind of representation learning paradigm, one relation may easily form multiple clusters in the representation space, we further propose a multi-center contrastive loss that allows one relation to form multiple clusters to better align with pretraining. Experiments on two document-level RE datasets, BioRED and Re-DocRED, demonstrate the effectiveness of our method. Particularly, when using 1% end-task training data, our method outperforms PLM-based RE classifier by 10.5% and 6.1% on the two datasets, respectively.`;
+    let absString = `Read this text below:<br>Relation extraction (RE), which has relied on structurally annotated corpora for model training, has been particularly challenging in low-resource scenarios and domains. Recent literature has tackled low-resource RE by self-supervised learning, where the solution involves pretraining the entity pair embedding by RE-based objective and finetuning on labeled data by classification-based objective. However, a critical challenge to this approach is the gap in objectives, which prevents the RE model from fully utilizing the knowledge in pretrained representations. In this paper, we aim at bridging the gap and propose to pretrain and finetune the RE model using consistent objectives of contrastive learning. Since in this kind of representation learning paradigm, one relation may easily form multiple clusters in the representation space, we further propose a multi-center contrastive loss that allows one relation to form multiple clusters to better align with pretraining. Experiments on two document-level RE datasets, BioRED and Re-DocRED, demonstrate the effectiveness of our method. Particularly, when using 1% end-task training data, our method outperforms PLM-based RE classifier by 10.5% and 6.1% on the two datasets, respectively.`;
 
-    let noteString = `Read this clinical note below:<br>Patient Name: John Doe
+    let noteString = `Read this text below:<br>Patient Name: John Doe
 Age: 45
 Gender: Male
 Date of Examination: August 3, 2023
@@ -820,7 +820,7 @@ Obesity - BMI 32, struggling with weight management.`;
       {
         "turns": [
           ["User", noteString],
-          ["UniversalNER", "I've read this clinical note."],
+          ["UniversalNER", "I've read this text."],
           ["User", "What describes symptom in the text?​"],
           ["UniversalNER",
           '["cough", "shortness of breath", "chest tightness", "difficulty breathing", "fever", "chills"]'],
@@ -838,7 +838,7 @@ Obesity - BMI 32, struggling with weight management.`;
       {
         "turns": [
           ["User", absString],
-          ["UniversalNER", "I've read this abstract."],
+          ["UniversalNER", "I've read this text."],
           ["User", "What describes task in the text?​"],
           ["UniversalNER",
           '["Relation extraction", "low-resource RE", "document-level RE"]'],
@@ -856,7 +856,7 @@ Obesity - BMI 32, struggling with weight management.`;
       {
         "turns": [
           ["User", codeString],
-          ["UniversalNER", "I've read this text/code snippet."],
+          ["UniversalNER", "I've read this text."],
           ["User", "What describes library in the text?​"],
           ["UniversalNER",
           '["transformers"]'],
