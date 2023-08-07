@@ -115,7 +115,7 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <h1 class="title is-1 publication-title">UniversalNER</h1>
-            <h3 class="title is-3 publication-title">A case study on distilling task-level capabilities from LLMs</h3>
+            <h3 class="title is-3 publication-title">A case study on targeted distillation from LLMs</h3>
             <div class="is-size-5">
               <span class="author-block">
                 <a href="https://wzhouad.github.io/" style="color:#f68946;font-weight:normal;">Wenxuan Zhou<sup>*</sup></a>,
@@ -214,7 +214,10 @@
     <div class="container is-max-desktop">
       <div class="hero-body">
         <h4 class="subtitle has-text-centered">
-           We propose a recipe for distilling end-task capabilities from LLMs. Using NER as a case study, we successfully distill these capabilities from LLMs into a much smaller model UniversalNER
+           We propose a general recipe for <i>targeted</i> distilling where we train student models using mission-focused instruction tuning
+           for a broad application class such as open information extraction. We show that this can maximally replicate LLM’s capabilities
+           for the given application class, while preserving its generalizability across semantic types and domains.
+           Using NER as a case study, we successfully distill these capabilities from LLMs into a much smaller model UniversalNER
            that can recognize diverse types of entities or concepts in text corpora from a wide range of domains.
            UniversalNER surpasses existing instruction-tuned models at the same size (e.g., Alpaca, Vicuna) by a large margin, and shows substantially better performance to ChatGPT.
         </h4>
@@ -234,7 +237,7 @@
   <div class="columns is-centered has-text-centered">
     <div class="column is-six-fifths">
       <h2 class="title is-3"><img id="painting_icon" width="3%" src="images/command-line.png"> Instruction Data for NER</h2>
-      <span style="font-size: 95%;">Download the dataset from <a href="#">[HuggingFace Dataset]</a></span>
+      <span style="font-size: 95%;">Download the dataset from <a href="#">[Dataset]</a></span>
     </div>
   </div>
   <!-- </div> -->
@@ -337,7 +340,7 @@
   <!-- Results. -->
   <div class="columns is-centered has-text-centered">
     <div class="column is-six-fifths">
-      <h2 class="title is-3"><img id="painting_icon" width="3%" src="https://cdn-icons-png.flaticon.com/512/5379/5379860.png"> Task-specific Instruction Tuning</h2>
+      <h2 class="title is-3"><img id="painting_icon" width="3%" src="https://cdn-icons-png.flaticon.com/512/5379/5379860.png"> Mission-Focused Instruction Tuning</h2>
     </div>
   </div>
   <!-- </div> -->
@@ -348,7 +351,7 @@
     <div class="column is-full-width">
       <div class="content has-text-justified"> 
         <p>
-          Unlike the existing work that tunes the models to do diverse tasks, we present a recipe of instruction tuning for a specific task, where the pretrained model is tuned to generalize to previously unseen inputs within the same task.
+          Unlike the existing work that tunes the models to do diverse tasks, we present a general recipe of instruction tuning for a specific task, where the pretrained model is tuned for a broad application class such as open NER.
           <ul type="1">
             <li><b>Conversation-style Instruction Tuning: </b> <span style="font-size: 95%;">We adopt a conversation-style tuning format, where the language model (LM) is presented with a passage as input. Then, for each entity type that appears in the output, we transform it into a natural language question. Subsequently, we tune the LM to generate a structured output in the form of a JSON list containing all entities of the query type in the passage.
             We consider the <mark>reference entities</mark> (highlighted below) as gold tokens and apply a language modeling objective on these tokens.</span></li>
@@ -430,7 +433,7 @@
 </div>
           </ul>  
           Please check out ``UniversalNER'' model checkpoint on 
-          <a href="#">[HuggingFace Models]</a>.
+          <a href="#">[Models]</a>.
         </p>
       </div>
     </div>
@@ -466,7 +469,7 @@
       </p>
       <p>
         <b>Zero-shot Performance:</b> UniversalNER surpasses existing instruction-tuned models at the same size (e.g., Vicuna) by a large margin. More importantly, UniversalNER outperform ChatGPT in terms of average F1.
-        This demonstrates that task-specific distillation from diverse inputs can yield task-specific models with better performance and smaller size.
+         This demonstrates that our proposed targeted distillation from diverse inputs yields models that have superior performance on a broad application class while maintaining a relatively small model size.
         Domain breakdowns also show the improvements of UniversalNER over ChatGPT.
       </p>
        <div class="columns is-centered has-text-centered">
@@ -538,7 +541,7 @@
         <td><b>89.34</b></td>
     </tr>
     <tr>
-        <td>Broad Twitter Corpus</td>
+        <td>Broad Tweet Corpus</td>
         <td>58.61</td>
         <td>80.27</td>
         <td><b>81.25</b></td>
